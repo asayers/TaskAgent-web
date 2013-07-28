@@ -1,10 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 
--- | GET    /api/                 - get names of lists (consider changind endpoint)
+-- | The API is vaguely RESTful. Here's an overview:
+-- |
+-- | GET    /api/                 - get names of lists (TODO: consider changing this endpoint)
 -- | GET    /api/:list            - get all items in :list
 -- | POST   /api/:list {item}     - add {item} to :list
 -- | PUT    /api/:list/:id {item} - replace item :id with {item} in :list
 -- | DELETE /api/:list/:id        - remove item :id from :list
+-- |
+-- | See the Todo module for implementation details.
 module Main where
 
 import Todo
@@ -18,13 +22,13 @@ debug :: ActionM ()
 debug = do
   ps <- show <$> params
   js <- show <$> body
-  liftIO . putStrLn $ "Params: " ++ ps ++ "\nJSON: " ++ js
+  liftIO . putStrLn . unlines $ ["Params: " ++ ps, "JSON: " ++ js]
 
+-- TODO: catch exceptions thrown by Todo's exports and return informative error messages
 main :: IO ()
 main = scotty 3000 $ do
   middleware logStdoutDev
   middleware $ staticPolicy (noDots >-> addBase "assets")
-  get "/" $ file "assets/index.html"
   get "/api/" $ do
     lists <- liftIO showLists
     json lists

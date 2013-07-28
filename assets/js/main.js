@@ -61,7 +61,7 @@ todoApp.controller("TabsCtrl", function($scope, $location, listFactory) {
   };
   $scope.newList = function() {
     $location.path("/list/"+$scope.newListName);
-    $scope.lists = $scope.lists.concat($scope.newListName);
+    $scope.lists = $scope.lists.concat($scope.newListName).sort();
     $scope.newListName = "";
     $scope.showNewListModal = false;
   };
