@@ -22,6 +22,10 @@ ul.inline li form {
   margin: 0 auto;
 }
 
+#newItemInput {
+  width: 90%;
+}
+
 .done-true {
   text-decoration: line-through;
 }

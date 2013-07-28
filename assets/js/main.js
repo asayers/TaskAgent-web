@@ -1,13 +1,13 @@
-var todoApp = angular.module("todoApp",[]);
+var app = angular.module("todoApp",[]);
 
-todoApp.config(function($routeProvider, $locationProvider) {
+app.config(function($routeProvider, $locationProvider) {
   $locationProvider.html5Mode(true);
   $routeProvider
     .when("/list/:listName", {controller: "ListCtrl", templateUrl: "/list.html"})
     .otherwise({redirectTo: "/list/inbox"});
 });
 
-todoApp.factory("listFactory", function($http) {
+app.factory("listFactory", function($http) {
     return {
       getLists : function() {
         return $http.get("/api/");
@@ -27,7 +27,7 @@ todoApp.factory("listFactory", function($http) {
     };
 });
 
-todoApp.controller("ListCtrl", function($scope, $routeParams, $http, listFactory) {
+app.controller("ListCtrl", function($scope, $routeParams, $http, listFactory) {
   $scope.listName = $routeParams.listName;
   $scope.list = [];
   listFactory.getList($scope.listName).success(function(data) {
@@ -49,25 +49,29 @@ todoApp.controller("ListCtrl", function($scope, $routeParams, $http, listFactory
   };
 });
 
-todoApp.controller("TabsCtrl", function($scope, $location, listFactory) {
+app.controller("TabsCtrl", function($scope, $location, listFactory) {
   $scope.lists = [];
   listFactory.getLists().success(function(data) {
-    $scope.lists = data;
+    $scope.lists = data.sort();
   });
 
+  // Ideally, I'd have bound the focus state of the input to showNewListModal,
+  // so that it's focused when it appears, and disappears when focus is lost.
+  // Unfortunately, Angular doesn't seem to have an ng-focus directive, so I'm
+  // resorting to jQuery. 
   $scope.showNewListModal = false;
   $scope.openNewListModal = function() {
     $scope.showNewListModal = true;
+    // Can't focus on hidden element. Timeout gives the view time to update.
+    setTimeout(function() {$("#newListInput").focus();}, 20);
   };
   $scope.newList = function() {
     $location.path("/list/"+$scope.newListName);
-    $scope.lists = $scope.lists.concat($scope.newListName).sort();
+    $scope.lists = _.uniq($scope.lists.concat($scope.newListName).sort());
     $scope.newListName = "";
     $scope.showNewListModal = false;
   };
 });
-
-
 
 function deleteAt (xs, n) {
   ys = xs.splice(n);
