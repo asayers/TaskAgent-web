@@ -7,7 +7,8 @@ app][4]. Uses [AngularJS][2] for the front-end and [Scotty][3] on the backend.
 BSD 3-clause licenced.
 
 To build the server binary, run `make`. Note that the `assets` directory is
-required at runtime.
+required at runtime. Running the server will bring up the interface on
+`localhost:3001`.
 
 [1]: http://macrecon.com/taskagent-formatting/
 [2]: http://angularjs.org/

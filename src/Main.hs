@@ -26,7 +26,7 @@ debug = do
 
 -- TODO: catch exceptions thrown by Todo's exports and return informative error messages
 main :: IO ()
-main = scotty 3000 $ do
+main = scotty 3001 $ do
   middleware logStdoutDev
   middleware $ staticPolicy (noDots >-> addBase "assets")
   get "/api/" $ do
