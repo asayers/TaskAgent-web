@@ -18,7 +18,7 @@ ul.inline li form {
 }
 
 .container {
-  width: 600px;
+  width: 700px;
   margin: 0 auto;
 }
 
@@ -41,4 +41,13 @@ ul.inline li form {
 
 header {
   border-bottom: 1px solid black;
+}
+
+footer {
+  border-top: 1px solid #ccc;
+  padding: 0.5em;
+  font-size: 11px;
+  text-align: center;
+  margin-top: 2em;
+  color: #ccc;
 }
