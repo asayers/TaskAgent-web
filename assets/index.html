@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="todoApp">
+<head>
+  <meta charset="utf-8">
+  <title>To-do</title>
+  <link rel="stylesheet" href="/css/normalize-2.1.2.css" type="text/css" charset="utf-8">
+  <link rel="stylesheet" href="/css/style.css" type="text/css" charset="utf-8">
+  <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <script src="/js/angular-1.0.7.min.js" type="text/javascript" charset="utf-8"></script> 
+  <script src="/js/main.js" type="text/javascript" charset="utf-8"></script>
+</head>
+
+<body>
+  <div class="container">
+  <div id="listTabs" ng-controller="TabsCtrl">
+    <ul class="inline">
+      <li ng-repeat="list in lists">
+        <a href="/list/{{list}}">{{list}}</a>
+      </li>
+      <li>
+        <span class="hidden-{{showNewListModal}}"><a href="#" ng-click="openNewListModal()">New List</a></span>
+        <span class="shown-{{showNewListModal}}">
+          <form ng-submit="newList()" accept-charset="utf-8">
+            <input type="text" placeholder="Create new list" ng-model="newListName">
+            <input type="submit" value="New list">
+          </form>
+        </span>
+      </li>
+    </ul>
+  </div>
+  <div ng-view></div>
+  </div>
+</body>
+</html>

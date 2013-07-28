@@ -1,0 +1,44 @@
+ul.unstyled {
+  list-style: none;
+}
+
+ul.inline {
+  margin: 1em 0 1em 0;
+  padding: 0;
+  list-style: none;
+}
+
+ul.inline li {
+  margin-right: 1em;
+  display: inline;
+}
+
+ul.inline li form {
+  display: inline;
+}
+
+.container {
+  width: 600px;
+  margin: 0 auto;
+}
+
+.done-true {
+  text-decoration: line-through;
+}
+
+.hidden-true {
+  display: none;
+}
+
+.shown-false {
+  display: none;
+}
+
+.deleteLink {
+  font-size: 11px;
+  color: #f88;
+}
+
+header {
+  border-bottom: 1px solid black;
+}
