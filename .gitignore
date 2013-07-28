@@ -10,3 +10,4 @@ cabal-dev
 lists
 server
 server.pid
+dist.tar.gz

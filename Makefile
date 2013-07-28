@@ -7,3 +7,7 @@ start: compile
 
 restart: compile
 	kill `cat server.pid`
+
+dist: compile
+	strip -s server
+	tar -caf dist.tar.gz server assets nginx.conf
