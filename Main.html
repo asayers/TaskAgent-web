@@ -1,0 +1,12 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Main</title><link href="ocean.css" rel="stylesheet" type="text/css" title="Ocean" /><script src="haddock-util.js" type="text/javascript"></script><script type="text/javascript">//<![CDATA[
+window.onload = function () {pageLoad();setSynopsis("mini_Main.html");};
+//]]>
+</script></head><body><div id="package-header"><ul class="links" id="page-menu"><li><a href="index.html">Contents</a></li><li><a href="doc-index.html">Index</a></li></ul><p class="caption empty">&nbsp;</p></div><div id="content"><div id="module-header"><table class="info"><tr><th>Safe Haskell</th><td>None</td></tr></table><p class="caption">Main</p></div><div id="description"><p class="caption">Description</p><div class="doc"><p>The API is vaguely RESTful. Here's an overview:
+</p><dl><dt><code> GET /api/                  </code></dt><dd> get names of lists (TODO: consider changing this endpoint)
+</dd><dt><code> GET /api/:list             </code></dt><dd> get all items in :list
+</dd><dt><code> POST /api/:list {item}     </code></dt><dd> add {item} to :list
+</dd><dt><code> PUT /api/:list/:id {item} </code></dt><dd> replace item :id with {item} in :list
+</dd><dt><code> DELETE /api/:list/:id     </code></dt><dd> remove item :id from :list
+</dd></dl><p>See the Todo module for implementation details.
+</p></div></div><div id="synopsis"><p id="control.syn" class="caption expander" onclick="toggleSection('syn')">Synopsis</p><ul id="section.syn" class="hide" onclick="toggleSection('syn')"><li class="src short"><a href="#v:debug">debug</a> :: ActionM ()</li><li class="src short"><a href="#v:main">main</a> :: IO ()</li></ul></div><div id="interface"><h1>Documentation</h1><div class="top"><p class="src"><a name="v:debug" class="def">debug</a> :: ActionM ()</p><div class="doc"><p>Print request parameters and body to stdout.
+</p></div></div><div class="top"><p class="src"><a name="v:main" class="def">main</a> :: IO ()</p></div></div></div><div id="footer"><p>Produced by <a href="http://www.haskell.org/haddock/">Haddock</a> version 2.13.2.1</p></div></body></html>
