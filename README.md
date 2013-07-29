@@ -10,10 +10,12 @@ To build the server binary, run `make`. Note that the `assets` directory is
 required at runtime. Running the server will bring up the interface on
 `localhost:3001`.
 
-Demo: [todo.asayers.org][5]
+Check out the [demo][5] and the [docs][6].
+
 
 [1]: http://macrecon.com/taskagent-formatting/
 [2]: http://angularjs.org/
 [3]: http://hackage.haskell.org/package/scotty
 [4]: http://macrecon.com/app/TaskAgent/
 [5]: http://todo.asayers.org/
+[6]: http://asayers.github.io/TaskAgent-web/
