@@ -45,7 +45,14 @@ app.controller("ListCtrl", function($scope, $routeParams, $http, listFactory) {
   };
   $scope.removeItem = function(item) {
     listFactory.removeItem($scope.listName, item);
-    $scope.list = deleteAt($scope.list, item.id); // TODO: this is giving some weird behaviour. Try filtering by item.id instead.
+    $scope.list = _.map(_.filter($scope.list, function(x) {
+      return x.id != item.id;
+    }), function(x, i) {
+      x.id = i;
+      return x;
+    });
+    
+    // TODO: this is giving some weird behaviour. Try filtering by item.id instead.
   };
 });
 
