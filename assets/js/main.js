@@ -35,7 +35,7 @@ app.controller("ListCtrl", function($scope, $routeParams, $http, listFactory) {
   });
 
   $scope.addItem = function() {
-    if ($scope.newItemBody !== "") {
+    if ($scope.newItemBody) {
       newItem = {body: $scope.newItemBody, done:false, id: $scope.list.length};
       $scope.list.push(newItem);
       listFactory.createItem($scope.listName, newItem);
@@ -47,14 +47,14 @@ app.controller("ListCtrl", function($scope, $routeParams, $http, listFactory) {
   };
   $scope.removeItem = function(item) {
     listFactory.removeItem($scope.listName, item);
+    // Filter $scope.list to remove item, then map the ids of the remaining
+    // items to their indices in the list
     $scope.list = _.map(_.filter($scope.list, function(x) {
       return x.id != item.id;
     }), function(x, i) {
       x.id = i;
       return x;
     });
-    
-    // TODO: this is giving some weird behaviour. Try filtering by item.id instead.
   };
 });
 
@@ -81,9 +81,3 @@ app.controller("TabsCtrl", function($scope, $location, listFactory) {
     $scope.showNewListModal = false;
   };
 });
-
-function deleteAt (xs, n) {
-  ys = xs.splice(n);
-  ys.shift();
-  return xs.concat(ys);
-}
