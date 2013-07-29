@@ -35,10 +35,12 @@ app.controller("ListCtrl", function($scope, $routeParams, $http, listFactory) {
   });
 
   $scope.addItem = function() {
-    newItem = {body: $scope.newItemBody, done:false, id: $scope.list.length};
-    $scope.list.push(newItem);
-    listFactory.createItem($scope.listName, newItem);
-    $scope.newItemBody = "";
+    if ($scope.newItemBody !== "") {
+      newItem = {body: $scope.newItemBody, done:false, id: $scope.list.length};
+      $scope.list.push(newItem);
+      listFactory.createItem($scope.listName, newItem);
+      $scope.newItemBody = "";
+    }
   };
   $scope.updateItem = function(item) {
     listFactory.editItem($scope.listName, item);
