@@ -13,25 +13,11 @@
 
 <body>
   <div class="container">
-  <div id="listTabs" ng-controller="TabsCtrl">
-    <ul class="inline">
-      <li ng-repeat="list in lists">
-        <a href="/list/{{list}}">{{list}}</a>
-      </li>
-      <li>
-        <span ng-hide="showNewListModal"><a href="#" ng-click="openNewListModal()">New List</a></span>
-        <span ng-show="showNewListModal">
-          <form ng-submit="newList()" accept-charset="utf-8">
-            <input type="text" id="newListInput" placeholder="Create new list" ng-model="newListName">
-          </form>
-        </span>
-      </li>
-    </ul>
-  </div>
-  <div ng-view></div>
-  <footer>
-    &copy; 2013 Alex Sayers
-  </footer>
+    <div id="listTabs" ng-controller="TabsCtrl" ng-include="'/tabs.html'"></div>
+    <div ng-view></div>
+    <footer>
+      &copy; 2013 Alex Sayers
+    </footer>
   </div>
 
   <script src="https://login.persona.org/include.js" type="text/javascript" charset="utf-8"></script>
