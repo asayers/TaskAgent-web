@@ -1,39 +1,47 @@
 {-# LANGUAGE OverloadedStrings #-}
 
--- | This module deals with to-do lists and their various serialisations. There
--- | are three representations we use:
--- | - a simple String, for saving lists to disk;
--- | - an internal representation called List;
--- | - a JSON representation for passing to the front-end
--- |
--- | Disk Representation
--- | -------------------
--- | Each line represents a to-do, and begins either with '-' to indicate an
--- incomplete item, or 'x' to indicate a completed one. Note that the list is
--- ordered.
--- | Eg:
--- |     - One
--- |     x Two
--- |     - Three
--- |
--- | Internal Representation
--- | -----------------------
--- | A `List` is a list of `Item`s. Each item is either a `Complete itemBody` or an `Incomplete itemBody`.
--- | Eg:
--- |     [Complete "One", Incomplete "Two", Complete "Three"]
--- | 
--- | JSON Representation
--- | -------------------
--- | Items in the JSON representation are explicity numbered. This corresponds
--- to the numbering implicit in the ordering of the other representations. This
--- is so a single item may be modified by the front-end without having to
--- resend the entire list.
--- | Eg:
--- |     [
--- |       {body: "one", done: false},
--- |       {body: "two", done: true},
--- |       {body: "three", done: false}
--- |     ]
+{-|
+
+  To-do lists can be represented in three different ways:
+  - String: a simple line-separated representation for saving lists to disk;
+  - List:   an internal representation;
+  - JSON:   a JSON representation for passing list data to the front-end.
+
+  Disk Representation
+  -------------------
+  Each line represents a to-do, and begins either with '-' to indicate an
+  incomplete item, or 'x' to indicate a completed one. Note that the list is
+  ordered. Eg:
+
+      - One
+      x Two
+      - Three
+
+  Internal Representation
+  -----------------------
+  A `List` is a list of `Item`s. Each item is either a `Complete itemBody`
+  or an `Incomplete itemBody`. Eg:
+
+      [ Complete "One", Incomplete "Two", Complete "Three" ]
+
+  JSON Representation
+  -------------------
+  Items in the JSON representation are explicity numbered. This corresponds
+  to the numbering implicit in the ordering of the other representations.
+  This is so a single item may be modified by the front-end without having
+  to resend the entire list. Eg:
+
+      [
+        { body: "one",   done: false },
+        { body: "two",   done: true  },
+        { body: "three", done: false }
+      ]
+
+  This module exports functions for manipulating the lists stored in
+  `listDirectory`. There's not a lot of interesting logic - just conversion
+  between the different representations, and a bunch of file IO.
+
+-}
 module Todo ( loadList
             , addItem
             , editItem
@@ -60,19 +68,23 @@ listDirectory = "lists"
 
 ------------ Exports -----------
 
+-- | Read the contents of `listDirectory`/`listName`, parse it, and return a List
 -- TODO: unhandled fileIO exceptions
 loadList :: String -> IO List
-loadList name = do
-  file <- readFile $ listDirectory </> name
-  case parseItems file of
-    Nothing   -> error "Couldn't parse list"
+loadList listName = do
+  file <- readFile $ listDirectory </> listName
+  case parseList file of
+    Nothing    -> error "Couldn't parse list"
     Just items -> return $ List items
 
+-- | Append `item` to `listDirectory`/`listName`
+-- TODO: unhandled fileIO exceptions
 addItem :: String -> Item -> IO ()
 addItem listName item = do
   createListIfMissing listName
   appendFile (listDirectory </> listName) $ show item ++ "\n"
 
+-- | Replace the `itemId`th item in `listDirectory`/`listName` with `item`
 -- TODO: unhandled OOB exceptions
 editItem :: String -> Int -> Item -> IO ()
 editItem listName itemId item = do
@@ -80,6 +92,7 @@ editItem listName itemId item = do
   let (xs, _:ys) = splitAt itemId items
   writeFile' (listDirectory </> listName) . show $ List (xs ++ [item] ++ ys)
 
+-- | Remove the `itemId`th item from `listDirectory`/`listName`
 -- TODO: unhandled OOB exceptions
 removeItem :: String -> Int -> IO ()
 removeItem listName itemId = do
@@ -87,6 +100,7 @@ removeItem listName itemId = do
   let (xs, _:ys) = splitAt itemId items
   writeFile' (listDirectory </> listName) . show $ List (xs ++ ys)
 
+-- | Return the names of the files in `listDirectory`.
 showLists :: IO [String]
 showLists = filter (notElem '.') <$> getDirectoryContents listDirectory
 
@@ -118,15 +132,17 @@ instance FromJSON Item where
                            Nothing    -> fail "Couldn't parse item"
   parseJSON _          = fail "Couldn't parse item"
 
------------- Read ------------
+---------- List Parsing ----------
+
+-- TODO: consider using Parsec, or making List an instance of Read
 
 parseItem :: String -> Maybe Item
 parseItem ('-':' ':xs) = Just (Incomplete xs)
 parseItem ('x':' ':xs) = Just (Complete xs)
 parseItem _            = Nothing
 
-parseItems :: String -> Maybe [Item]
-parseItems = mapM parseItem . lines
+parseList :: String -> Maybe [Item]
+parseList = mapM parseItem . lines
 
 --------- List Creation ---------
 
@@ -143,6 +159,8 @@ createListIfMissing listName = do
 
 ----------- Helpers ------------
 
+-- | Write `contents` to a temporary file in `listDirectory`, then - if nothing
+-- goes wrong - rename it to `path`, overwriting any existing file at that path.
 writeFile' :: FilePath -> String -> IO ()
 writeFile' path contents = bracketOnError (openTempFile listDirectory "todo")
   (\(n,h) -> hClose h >> removeFile n) $ \(tempPath, tempHandle) -> do
