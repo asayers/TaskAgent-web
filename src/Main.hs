@@ -1,14 +1,18 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 -- | The API is vaguely RESTful. Here's an overview:
--- |
--- | GET    /api/                 - get names of lists (TODO: consider changing this endpoint)
--- | GET    /api/:list            - get all items in :list
--- | POST   /api/:list {item}     - add {item} to :list
--- | PUT    /api/:list/:id {item} - replace item :id with {item} in :list
--- | DELETE /api/:list/:id        - remove item :id from :list
--- |
--- | See the Todo module for implementation details.
+-- 
+-- [@ GET \/api\/                  @] get names of lists (TODO: consider changing this endpoint)
+--
+-- [@ GET \/api\/:list             @] get all items in :list
+--
+-- [@ POST \/api\/:list {item}     @] add {item} to :list
+--
+-- [@ PUT \/api\/:list\/:id {item} @] replace item :id with {item} in :list
+--
+-- [@ DELETE \/api\/:list\/:id     @] remove item :id from :list
+-- 
+-- See the Todo module for implementation details.
 module Main where
 
 import Todo
@@ -18,6 +22,7 @@ import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import Network.Wai.Middleware.Static (staticPolicy, noDots, addBase, (>->))
 import Control.Applicative ((<$>))
 
+-- | Print request parameters and body to stdout.
 debug :: ActionM ()
 debug = do
   ps <- show <$> params

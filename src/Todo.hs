@@ -1,47 +1,40 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-{-|
-
-  To-do lists can be represented in three different ways:
-  - String: a simple line-separated representation for saving lists to disk;
-  - List:   an internal representation;
-  - JSON:   a JSON representation for passing list data to the front-end.
-
-  Disk Representation
-  -------------------
-  Each line represents a to-do, and begins either with '-' to indicate an
-  incomplete item, or 'x' to indicate a completed one. Note that the list is
-  ordered. Eg:
-
-      - One
-      x Two
-      - Three
-
-  Internal Representation
-  -----------------------
-  A `List` is a list of `Item`s. Each item is either a `Complete itemBody`
-  or an `Incomplete itemBody`. Eg:
-
-      [ Complete "One", Incomplete "Two", Complete "Three" ]
-
-  JSON Representation
-  -------------------
-  Items in the JSON representation are explicity numbered. This corresponds
-  to the numbering implicit in the ordering of the other representations.
-  This is so a single item may be modified by the front-end without having
-  to resend the entire list. Eg:
-
-      [
-        { body: "one",   done: false },
-        { body: "two",   done: true  },
-        { body: "three", done: false }
-      ]
-
-  This module exports functions for manipulating the lists stored in
-  `listDirectory`. There's not a lot of interesting logic - just conversion
-  between the different representations, and a bunch of file IO.
-
--}
+-- | To-do lists can be represented in three different ways:
+--
+-- - String: a simple line-separated representation for saving lists to disk;
+--
+-- - List:   an internal representation;
+--
+-- - JSON:   a JSON representation for passing list data to the front-end.
+--
+-- /Disk Representation/: Each line represents a to-do, and begins either with
+-- '-' to indicate an incomplete item, or 'x' to indicate a completed one. Note
+-- that the list is ordered. Eg:
+--
+-- > - One
+-- > x Two
+-- > - Three
+--
+-- /Internal Representation/: A `List` is a list of `Item`s. Each item is
+-- either a `Complete itemBody` or an `Incomplete itemBody`. Eg:
+--
+-- > [ Complete "One", Incomplete "Two", Complete "Three" ]
+--
+-- /JSON Representation/: Items in the JSON representation are explicity
+-- numbered. This corresponds to the numbering implicit in the ordering of the
+-- other representations. This is so a single item may be modified by the
+-- front-end without having to resend the entire list. Eg:
+--
+-- > [
+-- >   { body: "one",   done: false },
+-- >   { body: "two",   done: true  },
+-- >   { body: "three", done: false }
+-- > ]
+--
+-- This module exports functions for manipulating the lists stored in
+-- `listDirectory`. There's not a lot of interesting logic - just conversion
+-- between the different representations, and a bunch of file IO.
 module Todo ( loadList
             , addItem
             , editItem
@@ -68,8 +61,8 @@ listDirectory = "lists"
 
 ------------ Exports -----------
 
--- | Read the contents of `listDirectory`/`listName`, parse it, and return a List
 -- TODO: unhandled fileIO exceptions
+-- | Read the contents of `listDirectory`/`listName`, parse it, and return a List
 loadList :: String -> IO List
 loadList listName = do
   file <- readFile $ listDirectory </> listName
@@ -77,23 +70,23 @@ loadList listName = do
     Nothing    -> error "Couldn't parse list"
     Just items -> return $ List items
 
--- | Append `item` to `listDirectory`/`listName`
 -- TODO: unhandled fileIO exceptions
+-- | Append `item` to `listDirectory`/`listName`
 addItem :: String -> Item -> IO ()
 addItem listName item = do
   createListIfMissing listName
   appendFile (listDirectory </> listName) $ show item ++ "\n"
 
--- | Replace the `itemId`th item in `listDirectory`/`listName` with `item`
 -- TODO: unhandled OOB exceptions
+-- | Replace the `itemId`th item in `listDirectory`/`listName` with `item`
 editItem :: String -> Int -> Item -> IO ()
 editItem listName itemId item = do
   (List items) <- loadList listName
   let (xs, _:ys) = splitAt itemId items
   writeFile' (listDirectory </> listName) . show $ List (xs ++ [item] ++ ys)
 
--- | Remove the `itemId`th item from `listDirectory`/`listName`
 -- TODO: unhandled OOB exceptions
+-- | Remove the `itemId`th item from `listDirectory`/`listName`
 removeItem :: String -> Int -> IO ()
 removeItem listName itemId = do
   (List items) <- loadList listName
