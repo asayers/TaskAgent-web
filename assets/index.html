@@ -2,16 +2,13 @@
 <html lang="en" ng-app="todoApp">
 <head>
   <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge"> <!-- Prevent IE compatability mode -->
   <title>To-do</title>
   <link rel="stylesheet" href="/css/normalize-2.1.2.css" type="text/css" charset="utf-8">
   <link rel="stylesheet" href="/css/style.css" type="text/css" charset="utf-8">
   <!--[if lt IE 9]>
       <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
   <![endif]-->
-  <script src="/js/jquery-2.0.3.min.js" type="text/javascript" charset="utf-8"></script>
-  <script src="/js/underscore-1.5.1.min.js" type="text/javascript" charset="utf-8"></script>
-  <script src="/js/angular-1.0.7.min.js" type="text/javascript" charset="utf-8"></script> 
-  <script src="/js/main.js" type="text/javascript" charset="utf-8"></script>
 </head>
 
 <body>
@@ -22,8 +19,8 @@
         <a href="/list/{{list}}">{{list}}</a>
       </li>
       <li>
-        <span class="hidden-{{showNewListModal}}"><a href="#" ng-click="openNewListModal()">New List</a></span>
-        <span class="shown-{{showNewListModal}}">
+        <span ng-hide="showNewListModal"><a href="#" ng-click="openNewListModal()">New List</a></span>
+        <span ng-show="showNewListModal">
           <form ng-submit="newList()" accept-charset="utf-8">
             <input type="text" id="newListInput" placeholder="Create new list" ng-model="newListName">
           </form>
@@ -36,5 +33,12 @@
     &copy; 2013 Alex Sayers
   </footer>
   </div>
+
+  <script src="https://login.persona.org/include.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/js/jquery-2.0.3.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/js/underscore-1.5.1.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/js/angular-1.0.7.min.js" type="text/javascript" charset="utf-8"></script> 
+  <script src="/js/main.js" type="text/javascript" charset="utf-8"></script>
+
 </body>
 </html>

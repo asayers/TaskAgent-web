@@ -30,14 +30,6 @@ ul.inline li form {
   text-decoration: line-through;
 }
 
-.hidden-true {
-  display: none;
-}
-
-.shown-false {
-  display: none;
-}
-
 .deleteLink {
   font-size: 11px;
   color: #f88;
