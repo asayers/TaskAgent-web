@@ -1,5 +1,2 @@
-CC=ghc
-CFLAGS=-O2
-
 compile: Main.hs
-	$(CC) -o server $< -O2
+	ghc -O2 -o server $<
