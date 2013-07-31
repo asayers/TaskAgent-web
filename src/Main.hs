@@ -2,15 +2,15 @@
 
 -- | The API is vaguely RESTful. Here's an overview:
 -- 
--- [@ GET \/api\/                  @] get names of lists (TODO: consider changing this endpoint)
+-- [@ GET \/api\/lists                  @] get names of lists (TODO: consider changing this endpoint)
 --
--- [@ GET \/api\/:list             @] get all items in :list
+-- [@ GET \/api\/list/:list             @] get all items in :list
 --
--- [@ POST \/api\/:list {item}     @] add {item} to :list
+-- [@ POST \/api\/list/:list {item}     @] add {item} to :list
 --
--- [@ PUT \/api\/:list\/:id {item} @] replace item :id with {item} in :list
+-- [@ PUT \/api\/list/:list\/:id {item} @] replace item :id with {item} in :list
 --
--- [@ DELETE \/api\/:list\/:id     @] remove item :id from :list
+-- [@ DELETE \/api\/list/:list\/:id     @] remove item :id from :list
 -- 
 -- See the Todo module for implementation details.
 module Main where
@@ -24,14 +24,15 @@ import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import Network.Wai.Middleware.Static (staticPolicy, noDots, addBase, (>->))
 import Control.Applicative ((<$>))
 import Data.ByteString (ByteString)
+import Data.ByteString.Char8 (pack)
 import Web.ClientSession (getDefaultKey, Key)
 import Network.HTTP.Types.Status (unauthorized401, ok200)
 import Data.Aeson (object, (.=))
 import Network.Wai (requestHeaders)
 
 -- | This is sent to the Persona verifier
-hostUrl :: ByteString
-hostUrl = "http://todo.asayers.org"
+hostUrl :: IO ByteString
+hostUrl = pack <$> readFile "hostname.conf"
 
 -- TODO: if the "Cookie" header isn't set, we just crash. Better to return nothing so we can send back a 401 status.
 -- | Returns the email address of the logged in user
@@ -56,32 +57,33 @@ main = scotty 3001 $ do
   key <- liftIO getDefaultKey
   get "/" $ redirect "/list/inbox"
   get "/list/:list" $ file "assets/index.html"
-  get "/api/" $ withAuthentication key $ \email -> do
+  get "/api/lists" $ withAuthentication key $ \email -> do
       lists <- liftIO (showLists email)
       json lists
-  get "/api/:list" $ withAuthentication key $ \email -> do
+  get "/api/list/:list" $ withAuthentication key $ \email -> do
     listName <- param "list"
     list <- liftIO $ loadList email listName
     json list
-  post "/api/:list" $ withAuthentication key $ \email -> do
+  post "/api/list/:list" $ withAuthentication key $ \email -> do
     list <- param "list"
     item <- jsonData
     liftIO $ addItem email list item
     text "success!"
-  put "/api/:list/:id" $ withAuthentication key $ \email -> do
+  put "/api/list/:list/:id" $ withAuthentication key $ \email -> do
     list <- param "list"
     itemId <- param "id"
     item <- jsonData
     liftIO $ editItem email list itemId item
     text "success!"
-  delete "/api/:list/:id" $ withAuthentication key $ \email -> do
+  delete "/api/list/:list/:id" $ withAuthentication key $ \email -> do
     list <- param "list"
     itemId <- param "id"
     liftIO $ removeItem email list itemId
     text "success!"
   post "/auth/login" $ do
     assertion <- jsonData
-    VerifierResponse authStatus email <- liftIO $ checkAssertion hostUrl assertion
+    host <- liftIO hostUrl
+    VerifierResponse authStatus email <- liftIO $ checkAssertion host assertion
     if authStatus == "okay"
       then do
         session <- liftIO $ encryptAndSerialise key email

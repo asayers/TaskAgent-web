@@ -11,21 +11,21 @@ app.config(function($routeProvider, $locationProvider, $httpProvider) {
 app.factory("listFactory", function($http) {
     return {
       getLists : function() {
-        return $http.get("/api/");
+        return $http.get("/api/lists");
       },
       getList: function(listName) {
-        return $http.get("/api/"+listName);
+        return $http.get("/api/list/"+listName);
       },
       createItem: function(listName, item) {
-        return $http.post("/api/"+listName, item);
+        return $http.post("/api/list/"+listName, item);
       },
       editItem: function(listName, item) {
-        return $http.put("/api/"+listName+"/"+item.id, item);
+        return $http.put("/api/list/"+listName+"/"+item.id, item);
       },
       removeItem: function(listName, item) {
         return $http({
           method: "DELETE",
-          url: "/api/"+listName+"/"+item.id
+          url: "/api/list/"+listName+"/"+item.id
         });
       }
     };
