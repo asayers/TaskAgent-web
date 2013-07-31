@@ -35,6 +35,10 @@ ul.inline li form {
   color: #f88;
 }
 
+.logout {
+  font-size: 11px;
+}
+
 header {
   border-bottom: 1px solid black;
 }

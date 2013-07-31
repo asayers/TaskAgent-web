@@ -30,10 +30,10 @@ app.factory("listFactory", function($http) {
 app.factory("authFactory", function($http, $cookies) {
     return {
       login: function(assertion) {
-        return $http.post("/login", {assertion: assertion});
+        return $http.post("/auth/login", {assertion: assertion});
       },
       logout: function() {
-        return $http.post("/logout", $cookies.session);
+        return $http.post("/auth/logout", $cookies.session);
       },
       request: function(path) {
         return $http.post(path, {auth: $cookies.session, email: $cookies.email});
@@ -98,8 +98,10 @@ app.controller("TabsCtrl", function($scope, $location, listFactory) {
 
 app.controller("AuthCtrl", function($scope, authFactory, $cookies) {
   $scope.email = $cookies.email;
+  $scope.loggingIn = false;
 
   $scope.login = function() {
+    $scope.loggingIn = true;
     navigator.id.request();
   };
   $scope.logout = function() {
@@ -113,8 +115,10 @@ app.controller("AuthCtrl", function($scope, authFactory, $cookies) {
         $cookies.session = response.auth;
         $cookies.email = response.email;
         $scope.email = $cookies.email;
+        $scope.loggingIn = false;
       }).error( function() {
         navigator.id.logout();
+        $scope.loggingIn = false;
       });
     },
     onlogout: function() {
