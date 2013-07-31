@@ -1,15 +1,20 @@
 <div ng-controller="TabsCtrl">
-  <ul class="inline">
-    <li ng-repeat="list in lists">
-      <a href="/list/{{list}}">{{list}}</a>
-    </li>
-    <li>
-      <span ng-hide="showNewListModal"><a href="#" ng-click="openNewListModal()">New List</a></span>
-      <span ng-show="showNewListModal">
-        <form ng-submit="newList()" accept-charset="utf-8">
-          <input type="text" id="newListInput" placeholder="Create new list" ng-model="newListName">
-        </form>
-      </span>
-    </li>
-  </ul>
+  <div ng-show="loggedIn">
+    <ul class="inline">
+      <li ng-repeat="list in lists">
+        <a href="/list/{{list}}">{{list}}</a>
+      </li>
+      <li>
+        <span ng-hide="showNewListModal"><a href="#" ng-click="openNewListModal()">New List</a></span>
+        <span ng-show="showNewListModal">
+          <form ng-submit="newList()" accept-charset="utf-8">
+            <input type="text" id="newListInput" placeholder="Create new list" ng-model="newListName">
+          </form>
+        </span>
+      </li>
+    </ul>
+  </div>
+  <div ng-hide="loggedIn">
+    Please log in.
+  </div>
 </div>

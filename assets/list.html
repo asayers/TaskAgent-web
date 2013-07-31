@@ -1,3 +1,4 @@
+<div ng-show="loggedIn">
 <div id="listName">
   <h1>{{listName}}</h1>
 </div>
@@ -13,3 +14,7 @@
   <input type="text" id="newItemInput" ng-model="newItemBody" placeholder="Add new item">
   <input type="submit" value="Add">
 </form>
+</div>
+<div ng-hide="loggedIn">
+  Please log in.
+</div>
