@@ -112,8 +112,8 @@ app.controller("AuthCtrl", function($scope, authFactory, $cookies) {
     loggedInUser: $cookies.email,
     onlogin: function(assertion) {
       authFactory.login(assertion).success(function(response) {
-        $cookies.session = response.auth;
-        $cookies.email = response.email;
+//        $cookies.session = response.auth;
+//        $cookies.email = response.email;
         $scope.email = $cookies.email;
         $scope.loggingIn = false;
       }).error( function() {

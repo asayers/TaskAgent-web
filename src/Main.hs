@@ -17,7 +17,7 @@ module Main where
 
 import Todo
 import Auth
-import Web.Scotty (scotty, get, file, middleware, notFound, json, post, param, params, text, ActionM, jsonData, put, body, delete, status)
+import Web.Scotty (scotty, get, file, middleware, notFound, json, post, param, params, text, ActionM, jsonData, put, body, delete, status, header)
 import Control.Monad.IO.Class (liftIO)
 import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import Network.Wai.Middleware.Static (staticPolicy, noDots, addBase, (>->))
@@ -26,6 +26,8 @@ import Data.ByteString (ByteString)
 import Web.ClientSession (getDefaultKey)
 import Data.Aeson (object, (.=))
 import Network.HTTP.Types.Status (unauthorized401, accepted202)
+import Data.Monoid (mappend)
+import Data.Text.Lazy (pack)
 
 hostUrl :: ByteString
 hostUrl = "http://localhost:3001"
@@ -44,27 +46,27 @@ main = scotty 3001 $ do
   middleware $ staticPolicy (noDots >-> addBase "assets")
   key <- liftIO getDefaultKey
   get "/api/" $ do
-    lists <- liftIO showLists
+    lists <- liftIO $ showLists "asayers"
     json lists
   get "/api/:list" $ do
     list <- param "list"
-    response <- liftIO $ loadList list
+    response <- liftIO $ loadList "asayers" list
     json response
   post "/api/:list" $ do
     list <- param "list"
     item <- jsonData
-    liftIO $ addItem list item
+    liftIO $ addItem "asayers" list item
     text "success!"
   put "/api/:list/:id" $ do
     list <- param "list"
     itemId <- param "id"
     item <- jsonData
-    liftIO $ editItem list itemId item
+    liftIO $ editItem "asayers" list itemId item
     text "success!"
   delete "/api/:list/:id" $ do
     list <- param "list"
     itemId <- param "id"
-    liftIO $ removeItem list itemId
+    liftIO $ removeItem "asayers" list itemId
     text "success!"
   post "/auth/login" $ do
     assertion <- jsonData
@@ -72,7 +74,10 @@ main = scotty 3001 $ do
     if authStatus == "okay"
       then do
         session <- liftIO $ encryptAndSerialise key email
-        json $ object ["auth" .= session, "email" .= email]
+        header "Set-Cookie" . pack $ "email=" ++ email
+        header "Set-Cookie" $ pack "session=" `mappend` session
+        text "success!"
+        --json $ object ["auth" .= session, "email" .= email]
       else status unauthorized401
   post "/auth/logout" $ status accepted202
   notFound $ file "assets/index.html"
