@@ -5,19 +5,22 @@ module Auth ( Assertion (..)
             , AuthToken (..)
             , checkAssertion
             , checkAuthToken
+            , parseAuthToken
             , encryptAndSerialise
             ) where
 
 import Control.Applicative ((<$>), (<*>))
 import Data.Aeson
+import Text.ParserCombinators.Parsec
 import Network.HTTP.Conduit
 import Data.Maybe (fromJust)
 import Data.ByteString (ByteString)
 import Data.ByteString.Char8 (pack)
 import Data.ByteString.Lazy (fromChunks)
-import Data.Text.Lazy (Text)
+import Data.Text.Lazy (Text, unpack)
 import Data.Text.Lazy.Encoding (decodeUtf8)
 import Web.ClientSession (Key, encryptIO, decrypt)
+import Control.Error (hush)
 
 data Assertion = Assertion String deriving (Show)
 instance FromJSON Assertion where
@@ -31,7 +34,7 @@ instance FromJSON VerifierResponse where
 
 data AuthToken = AuthToken String String deriving (Show)
 instance FromJSON AuthToken where
-  parseJSON (Object v) = AuthToken <$> v .: "email" <*> v .: "auth"
+  parseJSON (Object v) = AuthToken <$> v .: "email" <*> v .: "session"
   parseJSON _          = error "Invalid JSON"
 
 checkAssertion :: ByteString -> Assertion -> IO VerifierResponse
@@ -53,3 +56,24 @@ encryptAndSerialise :: Key -> String -> IO Text
 encryptAndSerialise key msg = do
   encMsg <- encryptIO key . pack $ msg
   return $ decodeUtf8 $ fromChunks [encMsg]
+
+parseAuthToken :: Text -> Maybe AuthToken
+parseAuthToken str = case parseCookie $ unpack str of
+                       Nothing -> Nothing
+                       Just c  -> AuthToken <$> lookup "email" c <*> lookup "session" c
+
+parseCookie :: String -> Maybe [(String, String)]
+parseCookie = hush . parse cookieFields "(Unknown)"
+
+cookieFields :: GenParser Char st [(String, String)]
+cookieFields = do
+  first <- cookieField
+  next <- (string "; " >> cookieFields) <|> return []
+  return $ first:next
+
+cookieField :: GenParser Char st (String, String)
+cookieField = do
+  name <- many (noneOf "=;\n")
+  char '='
+  value <- many (noneOf "=;\n")  
+  return (name, value)
