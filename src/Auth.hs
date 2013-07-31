@@ -46,8 +46,8 @@ checkAssertion hostUrl (Assertion a) = do
   return . fromJust . decode . responseBody $ response
 
 checkAuthToken :: Key -> AuthToken -> Maybe String
-checkAuthToken key (AuthToken email auth) =
-  case decrypt key $ pack auth of
+checkAuthToken key (AuthToken email session) =
+  case decrypt key $ pack session of
     Nothing -> Nothing
     Just str -> if str == pack email then Just email
                                      else Nothing
@@ -73,7 +73,7 @@ cookieFields = do
 
 cookieField :: GenParser Char st (String, String)
 cookieField = do
-  name <- many (noneOf "=;\n")
+  name <- many (noneOf "=")
   char '='
-  value <- many (noneOf "=;\n")  
+  value <- many (noneOf ";\n")  
   return (name, value)
