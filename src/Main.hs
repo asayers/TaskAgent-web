@@ -27,33 +27,34 @@ import Data.ByteString (ByteString)
 import Web.ClientSession (getDefaultKey, Key)
 import Network.HTTP.Types.Status (unauthorized401, ok200)
 import Data.Aeson (object, (.=))
-import Control.Error (fromMaybe)
+import Network.Wai (requestHeaders)
 
+-- | This is sent to the Persona verifier
 hostUrl :: ByteString
 hostUrl = "http://localhost:3001"
 
 -- | Returns the email address of the logged in user
 authenticate :: Key -> ActionM (Maybe String)
 authenticate key = do
-  authToken <- parseAuthToken <$> reqHeader "Cookie"
-  let email = checkAuthToken key <$> authToken
+  cookie <- reqHeader "Cookie"
+  let authToken = parseAuthToken cookie
+      email     = checkAuthToken key <$> authToken
   return $ join email
 
+-- | If a user is logged in, perform fn with their email address; otherwise, return an error.
 withAuthentication :: Key -> (String -> ActionM ()) -> ActionM ()
 withAuthentication key fn = do
   email <- authenticate key
-  case email of
-    Nothing -> status unauthorized401
-    Just e  -> fn e
+  maybe (status unauthorized401) fn email
 
 -- | Print request parameters and body to stdout.
 debug :: Key -> ActionM ()
 debug key = do
-  email <- authenticate key
-  let authMsg = fromMaybe "Invalid" email
+  auth <- show <$> authenticate key
   ps <- show <$> params
   js <- show <$> body
-  liftIO . putStrLn . unlines $ ["Auth: " ++ authMsg, "Params: " ++ ps, "Request Body: " ++ js]
+  headers <- show . requestHeaders <$> request
+  liftIO . putStrLn . unlines $ ["Auth: " ++ auth,  "Params: " ++ ps, "Request Body: " ++ js, "Headers: " ++  headers]
 
 -- TODO: catch exceptions thrown by Todo's exports and return informative error messages
 main :: IO ()
@@ -92,7 +93,7 @@ main = scotty 3001 $ do
     if authStatus == "okay"
       then do
         session <- liftIO $ encryptAndSerialise key email
-        -- I would use a "Set-Cookie" header, but the request is handled by Angular so it doesn't work.
+        -- I would use a "Set-Cookie" header, but Angular strips it.
         json $ object ["session" .= session, "email" .= email]
       else status unauthorized401
   post "/auth/logout" $ status ok200
