@@ -1,4 +1,4 @@
-var app = angular.module("todoApp",[]);
+var app = angular.module("todoApp",["ngCookies"]);
 
 app.config(function($routeProvider, $locationProvider) {
   $locationProvider.html5Mode(true);
@@ -94,4 +94,34 @@ app.controller("TabsCtrl", function($scope, $location, listFactory) {
     $scope.newListName = "";
     $scope.showNewListModal = false;
   };
+});
+
+app.controller("AuthCtrl", function($scope, authFactory, $cookies) {
+  $scope.email = $cookies.email;
+
+  $scope.login = function() {
+    navigator.id.request();
+  };
+  $scope.logout = function() {
+    navigator.id.logout();
+  };
+
+  navigator.id.watch({
+    loggedInUser: $cookies.email,
+    onlogin: function(assertion) {
+      authFactory.login(assertion).success(function(response) {
+        $cookies.session = response.auth;
+        $cookies.email = response.email;
+        $scope.email = $cookies.email;
+      }).error( function() {
+        navigator.id.logout();
+      });
+    },
+    onlogout: function() {
+      authFactory.logout();
+      $cookies.session = "";
+      $cookies.email = "";
+      $scope.email = $cookies.email;
+    }
+  });
 });
