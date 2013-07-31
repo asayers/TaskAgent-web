@@ -1,10 +1,11 @@
-var app = angular.module("todoApp",["ngCookies"]);
+var app = angular.module("todoApp", []);
 
-app.config(function($routeProvider, $locationProvider) {
+app.config(function($routeProvider, $locationProvider, $httpProvider) {
   $locationProvider.html5Mode(true);
   $routeProvider
     .when("/list/:listName", {controller: "ListCtrl", templateUrl: "/list.html"})
     .otherwise({redirectTo: "/list/inbox"});
+  $httpProvider.withCredentials = true;
 });
 
 app.factory("listFactory", function($http) {
@@ -42,6 +43,8 @@ app.factory("authFactory", function($http) {
 });
 
 app.controller("ListCtrl", function($scope, $routeParams, $http, listFactory) {
+  $scope.loggedIn = $.cookie("email");
+  
   $scope.listName = $routeParams.listName;
   $scope.list = [];
   listFactory.getList($scope.listName).success(function(data) {
@@ -64,7 +67,7 @@ app.controller("ListCtrl", function($scope, $routeParams, $http, listFactory) {
     // Filter $scope.list to remove item, then map the ids of the remaining
     // items to their indices in the list
     $scope.list = _.map(_.filter($scope.list, function(x) {
-      return x.id != item.id;
+      return not(x.id === item.id);
     }), function(x, i) {
       x.id = i;
       return x;
@@ -73,6 +76,7 @@ app.controller("ListCtrl", function($scope, $routeParams, $http, listFactory) {
 });
 
 app.controller("TabsCtrl", function($scope, $location, listFactory) {
+  $scope.loggedIn = $.cookie("email");
   $scope.lists = [];
   listFactory.getLists().success(function(data) {
     $scope.lists = data.sort();
@@ -96,8 +100,12 @@ app.controller("TabsCtrl", function($scope, $location, listFactory) {
   };
 });
 
-app.controller("AuthCtrl", function($scope, authFactory, $cookies) {
-  $scope.email = $cookies.email;
+app.controller("AuthCtrl", function($scope, authFactory, $route) {
+  $.cookie.defaults.expires = 7;
+  $.cookie.defaults.path = "/";
+  $.cookie.raw = true;
+
+  $scope.email = $.cookie("email");
   $scope.loggingIn = false;
 
   $scope.login = function() {
@@ -109,13 +117,14 @@ app.controller("AuthCtrl", function($scope, authFactory, $cookies) {
   };
 
   navigator.id.watch({
-    loggedInUser: $cookies.email,
+    loggedInUser: $.cookie("email"),
     onlogin: function(assertion) {
       authFactory.login(assertion).success(function(response) {
-        $cookies.email = response.email;
-        $cookies.session = response.session;
-        $scope.email = $cookies.email;
+        $.cookie("email", response.email);
+        $.cookie("session", response.session);
+        $scope.email = response.email;
         $scope.loggingIn = false;
+        $route.reload();
       }).error( function() {
         navigator.id.logout();
         $scope.loggingIn = false;
@@ -123,9 +132,9 @@ app.controller("AuthCtrl", function($scope, authFactory, $cookies) {
     },
     onlogout: function() {
       authFactory.logout();
-      $cookies.session = "";
-      $cookies.email = "";
-      $scope.email = $cookies.email;
+      $.removeCookie("session");
+      $.removeCookie("email");
+      $route.reload();
     }
   });
 });
