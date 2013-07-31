@@ -16,11 +16,19 @@
 module Main where
 
 import Todo
-import Web.Scotty (scotty, get, file, middleware, notFound, json, post, param, params, text, ActionM, jsonData, put, body, delete)
+import Auth
+import Web.Scotty (scotty, get, file, middleware, notFound, json, post, param, params, text, ActionM, jsonData, put, body, delete, status)
 import Control.Monad.IO.Class (liftIO)
 import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import Network.Wai.Middleware.Static (staticPolicy, noDots, addBase, (>->))
 import Control.Applicative ((<$>))
+import Data.ByteString (ByteString)
+import Web.ClientSession (getDefaultKey)
+import Data.Aeson (object, (.=))
+import Network.HTTP.Types.Status (unauthorized401, accepted202)
+
+hostUrl :: ByteString
+hostUrl = "http://localhost:3001"
 
 -- | Print request parameters and body to stdout.
 debug :: ActionM ()
@@ -34,6 +42,7 @@ main :: IO ()
 main = scotty 3001 $ do
   middleware logStdoutDev
   middleware $ staticPolicy (noDots >-> addBase "assets")
+  key <- liftIO getDefaultKey
   get "/api/" $ do
     lists <- liftIO showLists
     json lists
@@ -57,4 +66,13 @@ main = scotty 3001 $ do
     itemId <- param "id"
     liftIO $ removeItem list itemId
     text "success!"
+  post "/auth/login" $ do
+    assertion <- jsonData
+    VerifierResponse authStatus email <- liftIO $ checkAssertion hostUrl assertion
+    if authStatus == "okay"
+      then do
+        session <- liftIO $ encryptAndSerialise key email
+        json $ object ["auth" .= session, "email" .= email]
+      else status unauthorized401
+  post "/auth/logout" $ status accepted202
   notFound $ file "assets/index.html"
