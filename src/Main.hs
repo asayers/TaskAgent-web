@@ -17,17 +17,15 @@ module Main where
 
 import Todo
 import Auth
-import Web.Scotty (scotty, get, file, middleware, notFound, json, post, param, params, text, ActionM, jsonData, put, body, delete, status, header)
+import Web.Scotty (scotty, get, file, middleware, notFound, json, post, param, params, text, ActionM, jsonData, put, body, delete, status, reqHeader)
 import Control.Monad.IO.Class (liftIO)
 import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import Network.Wai.Middleware.Static (staticPolicy, noDots, addBase, (>->))
 import Control.Applicative ((<$>))
 import Data.ByteString (ByteString)
 import Web.ClientSession (getDefaultKey)
+import Network.HTTP.Types.Status (unauthorized401, accepted202, ok200)
 import Data.Aeson (object, (.=))
-import Network.HTTP.Types.Status (unauthorized401, accepted202)
-import Data.Monoid (mappend)
-import Data.Text.Lazy (pack)
 
 hostUrl :: ByteString
 hostUrl = "http://localhost:3001"
@@ -36,8 +34,9 @@ hostUrl = "http://localhost:3001"
 debug :: ActionM ()
 debug = do
   ps <- show <$> params
+  cs <- show <$> reqHeader "Cookie"
   js <- show <$> body
-  liftIO . putStrLn . unlines $ ["Params: " ++ ps, "JSON: " ++ js]
+  liftIO . putStrLn . unlines $ ["Params: " ++ ps, "Cookies: " ++ cs, "JSON: " ++ js]
 
 -- TODO: catch exceptions thrown by Todo's exports and return informative error messages
 main :: IO ()
@@ -45,6 +44,7 @@ main = scotty 3001 $ do
   middleware logStdoutDev
   middleware $ staticPolicy (noDots >-> addBase "assets")
   key <- liftIO getDefaultKey
+  get "/test" $ debug >> text "test!"
   get "/api/" $ do
     lists <- liftIO $ showLists "asayers"
     json lists
@@ -74,10 +74,10 @@ main = scotty 3001 $ do
     if authStatus == "okay"
       then do
         session <- liftIO $ encryptAndSerialise key email
-        header "Set-Cookie" . pack $ "email=" ++ email
-        header "Set-Cookie" $ pack "session=" `mappend` session
-        text "success!"
-        --json $ object ["auth" .= session, "email" .= email]
+        -- I would use a "Set-Cookie" header, but the request is handled by Angular so it doesn't work.
+        json $ object ["session" .= session, "email" .= email]
       else status unauthorized401
   post "/auth/logout" $ status accepted202
-  notFound $ file "assets/index.html"
+  notFound $ do
+    status ok200
+    file "assets/index.html"
