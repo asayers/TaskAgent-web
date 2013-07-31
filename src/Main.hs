@@ -31,7 +31,7 @@ import Network.Wai (requestHeaders)
 
 -- | This is sent to the Persona verifier
 hostUrl :: ByteString
-hostUrl = "http://localhost:3001"
+hostUrl = "http://todo.asayers.org"
 
 -- TODO: if the "Cookie" header isn't set, we just crash. Better to return nothing so we can send back a 401 status.
 -- | Returns the email address of the logged in user
@@ -48,15 +48,6 @@ withAuthentication key fn = do
   email <- authenticate key
   maybe (status unauthorized401) fn email
 
--- | Print request parameters and body to stdout.
-debug :: Key -> ActionM ()
-debug key = do
-  auth <- show <$> authenticate key
-  ps <- show <$> params
-  js <- show <$> body
-  headers <- show . requestHeaders <$> request
-  liftIO . putStrLn . unlines $ ["Auth: " ++ auth,  "Params: " ++ ps, "Request Body: " ++ js, "Headers: " ++  headers]
-
 -- TODO: catch exceptions thrown by Todo's exports and return informative error messages
 main :: IO ()
 main = scotty 3001 $ do
@@ -66,8 +57,8 @@ main = scotty 3001 $ do
   get "/" $ redirect "/list/inbox"
   get "/list/:list" $ file "assets/index.html"
   get "/api/" $ withAuthentication key $ \email -> do
-    lists <- liftIO (showLists email)
-    json lists
+      lists <- liftIO (showLists email)
+      json lists
   get "/api/:list" $ withAuthentication key $ \email -> do
     listName <- param "list"
     list <- liftIO $ loadList email listName
@@ -99,3 +90,14 @@ main = scotty 3001 $ do
       else status unauthorized401
   post "/auth/logout" $ status ok200
   notFound $ file "assets/404.html"
+
+
+-- | Print request parameters and body to stdout.
+debug :: Key -> ActionM ()
+debug key = do
+  token <- parseAuthToken <$> reqHeader "Cookie"
+  let email = join $ checkAuthToken key <$> token
+  ps <- show <$> params
+  js <- show <$> body
+  headers <- show . requestHeaders <$> request
+  liftIO . putStrLn . unlines $ ["AuthToken: " ++ show token, "User: " ++ show email,  "Params: " ++ ps, "Request Body: " ++ js, "Headers: " ++  headers]
