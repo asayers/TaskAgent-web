@@ -1,0 +1,12 @@
+<div ng-controller="AuthCtrl">
+  <div ng-hide="email || loggingIn">
+    <a href="#" ng-click="login()">Log In</a>
+  </div>
+  <div ng-show="email && !loggingIn">
+    {{email}}
+    <a href="#" class="logout" ng-click="logout()">Log Out</a>
+  </div>
+  <div ng-show="loggingIn">
+    Logging in...
+  </div>
+</div>

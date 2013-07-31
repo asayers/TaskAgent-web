@@ -63,39 +63,39 @@ listDirectory = "lists"
 
 -- TODO: unhandled fileIO exceptions
 -- | Read the contents of `listDirectory`/`listName`, parse it, and return a List
-loadList :: String -> IO List
-loadList listName = do
-  file <- readFile $ listDirectory </> listName
+loadList :: String -> String -> IO List
+loadList user listName = do
+  file <- readFile $ listDirectory </> user </> listName
   case parseList file of
     Nothing    -> error "Couldn't parse list"
     Just items -> return $ List items
 
 -- TODO: unhandled fileIO exceptions
 -- | Append `item` to `listDirectory`/`listName`
-addItem :: String -> Item -> IO ()
-addItem listName item = do
-  createListIfMissing listName
-  appendFile (listDirectory </> listName) $ show item ++ "\n"
+addItem :: String -> String -> Item -> IO ()
+addItem user listName item = do
+  createListIfMissing user listName
+  appendFile (listDirectory </> user </> listName) $ show item ++ "\n"
 
 -- TODO: unhandled OOB exceptions
 -- | Replace the `itemId`th item in `listDirectory`/`listName` with `item`
-editItem :: String -> Int -> Item -> IO ()
-editItem listName itemId item = do
-  (List items) <- loadList listName
+editItem :: String -> String -> Int -> Item -> IO ()
+editItem user listName itemId item = do
+  (List items) <- loadList user listName
   let (xs, _:ys) = splitAt itemId items
-  writeFile' (listDirectory </> listName) . show $ List (xs ++ [item] ++ ys)
+  writeFile' (listDirectory </> user </> listName) . show $ List (xs ++ [item] ++ ys)
 
 -- TODO: unhandled OOB exceptions
 -- | Remove the `itemId`th item from `listDirectory`/`listName`
-removeItem :: String -> Int -> IO ()
-removeItem listName itemId = do
-  (List items) <- loadList listName
+removeItem :: String -> String -> Int -> IO ()
+removeItem user listName itemId = do
+  (List items) <- loadList user listName
   let (xs, _:ys) = splitAt itemId items
-  writeFile' (listDirectory </> listName) . show $ List (xs ++ ys)
+  writeFile' (listDirectory </> user </> listName) . show $ List (xs ++ ys)
 
 -- | Return the names of the files in `listDirectory`.
-showLists :: IO [String]
-showLists = filter (notElem '.') <$> getDirectoryContents listDirectory
+showLists :: String -> IO [String]
+showLists user = filter (notElem '.') <$> getDirectoryContents (listDirectory </> user)
 
 ------- Type definitions -------
 
@@ -144,9 +144,9 @@ createList path = do
   createDirectoryIfMissing True $ takeDirectory path
   writeFile path ""
 
-createListIfMissing :: String -> IO ()
-createListIfMissing listName = do
-  let path = listDirectory </> listName
+createListIfMissing :: String -> String -> IO ()
+createListIfMissing user listName = do
+  let path = listDirectory </> user </> listName
   b <- doesFileExist path
   unless b $ createList path
 
