@@ -1,0 +1,6 @@
+<div ng-hide="email">
+  Not logged in. <a href="#" ng-click="login()">Log In</a>
+</div>
+<div ng-show="email">
+  Logged in as {{email}}. <a href="#" ng-click="logout()">Log Out</a>
+</div>
