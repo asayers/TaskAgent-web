@@ -27,6 +27,20 @@ app.factory("listFactory", function($http) {
     };
 });
 
+app.factory("authFactory", function($http, $cookies) {
+    return {
+      login: function(assertion) {
+        return $http.post("/login", {assertion: assertion});
+      },
+      logout: function() {
+        return $http.post("/logout", $cookies.session);
+      },
+      request: function(path) {
+        return $http.post(path, {auth: $cookies.session, email: $cookies.email});
+      }
+    };
+});
+
 app.controller("ListCtrl", function($scope, $routeParams, $http, listFactory) {
   $scope.listName = $routeParams.listName;
   $scope.list = [];

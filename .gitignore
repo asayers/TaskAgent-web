@@ -11,3 +11,4 @@ lists
 server
 server.pid
 dist.tar.gz
+*.aes
