@@ -22,6 +22,10 @@ ul.inline li form {
   margin: 0 auto;
 }
 
+#authPanel {
+  float: right;
+}
+
 #newItemInput {
   width: 90%;
 }

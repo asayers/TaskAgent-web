@@ -4,6 +4,7 @@ module Auth ( Assertion (..)
             , VerifierResponse (..)
             , AuthToken (..)
             , checkAssertion
+            , checkAuthToken
             , encryptAndSerialise
             ) where
 
@@ -16,7 +17,7 @@ import Data.ByteString.Char8 (pack)
 import Data.ByteString.Lazy (fromChunks)
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy.Encoding (decodeUtf8)
-import Web.ClientSession (Key, encryptIO)
+import Web.ClientSession (Key, encryptIO, decrypt)
 
 data Assertion = Assertion String
 instance FromJSON Assertion where
@@ -40,6 +41,13 @@ checkAssertion hostUrl (Assertion a) = do
   response <- withManager . httpLbs $ req
   -- TODO: check certificate - at present we're open to a MitM
   return . fromJust . decode . responseBody $ response
+
+checkAuthToken :: Key -> AuthToken -> Maybe String
+checkAuthToken key (AuthToken email auth) =
+  case decrypt key $ pack auth of
+    Nothing -> Nothing
+    Just str -> if str == pack email then Just email
+                                     else Nothing
 
 encryptAndSerialise :: Key -> String -> IO Text
 encryptAndSerialise key msg = do
