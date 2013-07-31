@@ -22,21 +22,21 @@ app.factory("listFactory", function($http) {
         return $http.put("/api/"+listName+"/"+item.id, item);
       },
       removeItem: function(listName, item) {
-        return $http.delete("/api/"+listName+"/"+item.id);
+        return $http({
+          method: "DELETE",
+          url: "/api/"+listName+"/"+item.id
+        });
       }
     };
 });
 
-app.factory("authFactory", function($http, $cookies) {
+app.factory("authFactory", function($http) {
     return {
       login: function(assertion) {
         return $http.post("/auth/login", {assertion: assertion});
       },
       logout: function() {
-        return $http.post("/auth/logout", $cookies.session);
-      },
-      request: function(path) {
-        return $http.post(path, {auth: $cookies.session, email: $cookies.email});
+        return $http.post("/auth/logout");
       }
     };
 });
@@ -112,8 +112,8 @@ app.controller("AuthCtrl", function($scope, authFactory, $cookies) {
     loggedInUser: $cookies.email,
     onlogin: function(assertion) {
       authFactory.login(assertion).success(function(response) {
-//        $cookies.session = response.auth;
-//        $cookies.email = response.email;
+        $cookies.email = response.email;
+        $cookies.session = response.session;
         $scope.email = $cookies.email;
         $scope.loggingIn = false;
       }).error( function() {

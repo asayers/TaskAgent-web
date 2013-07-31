@@ -19,17 +19,17 @@ import Data.Text.Lazy (Text)
 import Data.Text.Lazy.Encoding (decodeUtf8)
 import Web.ClientSession (Key, encryptIO, decrypt)
 
-data Assertion = Assertion String
+data Assertion = Assertion String deriving (Show)
 instance FromJSON Assertion where
   parseJSON (Object v) = Assertion <$> v .: "assertion"
   parseJSON _          = error "Invalid JSON"
 
-data VerifierResponse = VerifierResponse String String
+data VerifierResponse = VerifierResponse String String deriving (Show)
 instance FromJSON VerifierResponse where
   parseJSON (Object v) = VerifierResponse <$> v .: "status" <*> v .: "email"
   parseJSON _          = error "Invalid JSON"
 
-data AuthToken = AuthToken String String
+data AuthToken = AuthToken String String deriving (Show)
 instance FromJSON AuthToken where
   parseJSON (Object v) = AuthToken <$> v .: "email" <*> v .: "auth"
   parseJSON _          = error "Invalid JSON"
