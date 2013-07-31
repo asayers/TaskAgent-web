@@ -33,6 +33,7 @@ import Network.Wai (requestHeaders)
 hostUrl :: ByteString
 hostUrl = "http://localhost:3001"
 
+-- TODO: if the "Cookie" header isn't set, we just crash. Better to return nothing so we can send back a 401 status.
 -- | Returns the email address of the logged in user
 authenticate :: Key -> ActionM (Maybe String)
 authenticate key = do

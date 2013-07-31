@@ -1,20 +1,26 @@
 <div ng-show="loggedIn">
-<div id="listName">
-  <h1>{{listName}}</h1>
-</div>
+  <div id="listName">
+    <h1>{{listName}}</h1>
+  </div>
 
-<ul class="unstyled">
-  <li ng-repeat="item in list | orderBy: 'id'">
-    <input type="checkbox" ng-model="item.done" ng-click="updateItem(item)"> 
-    <span class="done-{{item.done}}">{{item.body}}</span>
-    <a href="#" class="deleteLink" ng-click="removeItem(item)">delete</a>
-  </li>
-</ul>
-<form ng-submit="addItem()" accept-charset="utf-8">
-  <input type="text" id="newItemInput" ng-model="newItemBody" placeholder="Add new item">
-  <input type="submit" value="Add">
-</form>
+  <ul class="unstyled">
+    <li ng-repeat="item in list | orderBy: 'id'">
+      <input type="checkbox" ng-model="item.done" ng-click="updateItem(item)"> 
+      <span class="done-{{item.done}}">{{item.body}}</span>
+      <a href="#" class="deleteLink" ng-click="removeItem(item)">delete</a>
+    </li>
+  </ul>
+  <form ng-submit="addItem()" accept-charset="utf-8">
+    <input type="text" id="newItemInput" ng-model="newItemBody" placeholder="Add new item">
+    <input type="submit" value="Add">
+  </form>
 </div>
 <div ng-hide="loggedIn">
-  Please log in.
+  <h1>TaskAgent-web</h1>
+  <p>This is a simple to-do list web interface. Lists are saved to disk in the format
+  specified <a href="http://macrecon.com/taskagent-formatting/">here</a>, so they can be synchronised with the TaskAgent <a href="http://macrecon.com/app/TaskAgent/">iPhone
+  app</a>. Uses <a href="http://angularjs.org/">AngularJS</a> for the front-end and <a href="http://hackage.haskell.org/package/scotty">Scotty</a> on the backend.
+  BSD 3-clause licenced.</p>
+
+  <p>Check out the <a href="https://github.com/asayers/TaskAgent-web">code</a> and the <a href="http://asayers.github.io/TaskAgent-web/">docs</a>.</p>
 </div>

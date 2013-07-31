@@ -67,7 +67,7 @@ app.controller("ListCtrl", function($scope, $routeParams, $http, listFactory) {
     // Filter $scope.list to remove item, then map the ids of the remaining
     // items to their indices in the list
     $scope.list = _.map(_.filter($scope.list, function(x) {
-      return not(x.id === item.id);
+      return (x.id !== item.id);
     }), function(x, i) {
       x.id = i;
       return x;
