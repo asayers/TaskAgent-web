@@ -51,6 +51,18 @@ app.controller("ListCtrl", function($scope, $routeParams, $http, listFactory) {
     $scope.list = data;
   });
 
+  $scope.$on("login", function() {
+    $scope.loggedIn = true;
+    listFactory.getList($scope.listName).success(function(data) {
+      $scope.list = data;
+    });
+  });
+  $scope.$on("logout", function() {
+    $scope.list = [];
+    $scope.loggedIn = false;
+  });
+
+
   $scope.addItem = function() {
     if ($scope.newItemBody) {
       newItem = {body: $scope.newItemBody, done:false, id: $scope.list.length};
@@ -77,9 +89,20 @@ app.controller("ListCtrl", function($scope, $routeParams, $http, listFactory) {
 
 app.controller("TabsCtrl", function($scope, $location, listFactory) {
   $scope.loggedIn = $.cookie("email");
-  $scope.lists = [];
+  $scope.lists = ["inbox"];
   listFactory.getLists().success(function(data) {
     $scope.lists = data.sort();
+  });
+
+  $scope.$on("login", function() {
+    $scope.loggedIn = true;
+    listFactory.getLists().success(function(data) {
+      $scope.lists = data.sort();
+    });
+  });
+  $scope.$on("logout", function() {
+    $scope.lists = [];
+    $scope.loggedIn = false;
   });
 
   // Ideally, I'd have bound the focus state of the input to showNewListModal,
@@ -124,7 +147,7 @@ app.controller("AuthCtrl", function($scope, authFactory, $route) {
         $.cookie("session", response.session);
         $scope.email = response.email;
         $scope.loggingIn = false;
-        $route.reload();
+        angular.element("html").scope().$broadcast("login");
       }).error( function() {
         navigator.id.logout();
         $scope.loggingIn = false;
@@ -134,7 +157,8 @@ app.controller("AuthCtrl", function($scope, authFactory, $route) {
       authFactory.logout();
       $.removeCookie("session");
       $.removeCookie("email");
-      $route.reload();
+      $scope.email = "";
+      angular.element("html").scope().$broadcast("logout");
     }
   });
 });
