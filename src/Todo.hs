@@ -59,10 +59,10 @@ import Control.Applicative ((<$>))
 listDirectory :: FilePath
 listDirectory = "lists"
 
------------- Exports -----------
+------------ List Manipulation -----------
 
 -- TODO: unhandled fileIO exceptions
--- | Read the contents of `listDirectory`/`listName`, parse it, and return a List
+-- | Read the contents of `listDirectory`/`user`/`listName`, parse it, and return a List
 loadList :: String -> String -> IO List
 loadList user listName = do
   file <- readFile $ listDirectory </> user </> listName
@@ -71,38 +71,53 @@ loadList user listName = do
     Just items -> return $ List items
 
 -- TODO: unhandled fileIO exceptions
--- | Append `item` to `listDirectory`/`listName`
+-- | Append `item` to `listDirectory`/`user`/`listName`
 addItem :: String -> String -> Item -> IO ()
 addItem user listName item = do
   createListIfMissing user listName
   appendFile (listDirectory </> user </> listName) $ show item ++ "\n"
 
--- TODO: unhandled OOB exceptions
--- | Replace the `itemId`th item in `listDirectory`/`listName` with `item`
-editItem :: String -> String -> Int -> Item -> IO ()
-editItem user listName itemId item = do
-  (List items) <- loadList user listName
-  let (xs, _:ys) = splitAt itemId items
-  writeFile' (listDirectory </> user </> listName) . show $ List (xs ++ [item] ++ ys)
+-- | Replace the `itemId`th item in `listDirectory`/`user`/`listName` with `item`
+editItem :: Item -> Int -> String -> String -> IO ()
+editItem item itemId user listName = do
+  (List is) <- loadList user listName
+  unless (itemId < length is) $ do
+    let (xs, _:ys) = splitAt itemId is
+    writeFile' (listDirectory </> user </> listName) . show $ List (xs ++ [item] ++ ys)
 
--- TODO: unhandled OOB exceptions
--- | Remove the `itemId`th item from `listDirectory`/`listName`
-removeItem :: String -> String -> Int -> IO ()
-removeItem user listName itemId = do
-  (List items) <- loadList user listName
-  let (xs, _:ys) = splitAt itemId items
-  writeFile' (listDirectory </> user </> listName) . show $ List (xs ++ ys)
+-- | Remove the `itemId`th item from `listDirectory`/`user`/`listName`
+removeItem :: Int -> String -> String -> IO ()
+removeItem itemId user listName = do
+  (List is) <- loadList user listName
+  unless (itemId < length is) $ do
+    let (xs, _:ys) = splitAt itemId is
+        path = listDirectory </> user </> listName
+    case xs ++ ys of
+      []  -> removeFile path
+      is' -> writeFile' path $ show (List is')
 
+-- TODO: unhandled non-existence exception
 -- | Return the names of the files in `listDirectory`.
 showLists :: String -> IO [String]
 showLists user = filter (notElem '.') <$> getDirectoryContents (listDirectory </> user)
 
-------- Type definitions -------
+createListIfMissing :: String -> String -> IO ()
+createListIfMissing user listName = do
+  let path = listDirectory </> user </> listName
+  b <- doesFileExist path
+  unless b $ touchFile path
+
+
+----------- Internal Representation ----------
 
 data List = List [Item] deriving (Eq)
 data Item = Complete   { itemBody :: String }
           | Incomplete { itemBody :: String }
           deriving (Eq)
+
+
+------------ Disk Representation -------------
+-- TODO: consider using Parsec, or making List an instance of Read
 
 instance Show List where
   show (List xs) = unlines . map show $ xs
@@ -110,6 +125,17 @@ instance Show List where
 instance Show Item where
   show (Incomplete str) = "- " ++ str
   show (Complete str)   = "x " ++ str
+
+parseItem :: String -> Maybe Item
+parseItem ('-':' ':xs) = Just (Incomplete xs)
+parseItem ('x':' ':xs) = Just (Complete xs)
+parseItem _            = Nothing
+
+parseList :: String -> Maybe [Item]
+parseList = mapM parseItem . lines
+
+
+----------- JSON representation -------------
 
 instance ToJSON List where
   toJSON (List is) = toJSON $ zipWith jsonify [0..] is
@@ -125,32 +151,13 @@ instance FromJSON Item where
                            Nothing    -> fail "Couldn't parse item"
   parseJSON _          = fail "Couldn't parse item"
 
----------- List Parsing ----------
-
--- TODO: consider using Parsec, or making List an instance of Read
-
-parseItem :: String -> Maybe Item
-parseItem ('-':' ':xs) = Just (Incomplete xs)
-parseItem ('x':' ':xs) = Just (Complete xs)
-parseItem _            = Nothing
-
-parseList :: String -> Maybe [Item]
-parseList = mapM parseItem . lines
-
---------- List Creation ---------
-
-createList :: FilePath -> IO ()
-createList path = do
-  createDirectoryIfMissing True $ takeDirectory path
-  writeFile path ""
-
-createListIfMissing :: String -> String -> IO ()
-createListIfMissing user listName = do
-  let path = listDirectory </> user </> listName
-  b <- doesFileExist path
-  unless b $ createList path
 
 ----------- Helpers ------------
+
+touchFile :: FilePath -> IO ()
+touchFile path = do
+  createDirectoryIfMissing True $ takeDirectory path
+  writeFile path ""
 
 -- | Write `contents` to a temporary file in `listDirectory`, then - if nothing
 -- goes wrong - rename it to `path`, overwriting any existing file at that path.
