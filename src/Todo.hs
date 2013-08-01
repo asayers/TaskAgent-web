@@ -78,16 +78,16 @@ addItem user listName item = do
   appendFile (listDirectory </> user </> listName) $ show item ++ "\n"
 
 -- | Replace the `itemId`th item in `listDirectory`/`user`/`listName` with `item`
-editItem :: Item -> Int -> String -> String -> IO ()
-editItem item itemId user listName = do
+editItem :: String -> String -> Item -> Int -> IO ()
+editItem user listName item itemId = do
   (List is) <- loadList user listName
   unless (itemId < length is) $ do
     let (xs, _:ys) = splitAt itemId is
     writeFile' (listDirectory </> user </> listName) . show $ List (xs ++ [item] ++ ys)
 
 -- | Remove the `itemId`th item from `listDirectory`/`user`/`listName`
-removeItem :: Int -> String -> String -> IO ()
-removeItem itemId user listName = do
+removeItem :: String -> String -> Int -> IO ()
+removeItem user listName itemId = do
   (List is) <- loadList user listName
   unless (itemId < length is) $ do
     let (xs, _:ys) = splitAt itemId is

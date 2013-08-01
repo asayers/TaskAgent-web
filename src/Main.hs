@@ -11,6 +11,10 @@
 -- [@ PUT \/api\/list/:list\/:id {item} @] replace item :id with {item} in :list
 --
 -- [@ DELETE \/api\/list/:list\/:id     @] remove item :id from :list
+--
+-- [@ POST \/auth\/login {assertion}    @] verify assertion and return an auth token
+--
+-- [@ POST \/auth\/logout               @] no effect
 -- 
 -- See the Todo module for implementation details.
 module Main where
@@ -73,7 +77,7 @@ main = scotty 3001 $ do
     list <- param "list"
     itemId <- param "id"
     item <- jsonData
-    liftIO $ editItem email list itemId item
+    liftIO $ editItem email list item itemId
     text "success!"
   delete "/api/list/:list/:id" $ withAuthentication key $ \email -> do
     list <- param "list"
