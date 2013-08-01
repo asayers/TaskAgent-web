@@ -3,6 +3,7 @@ var app = angular.module("todoApp", []);
 app.config(function($routeProvider, $locationProvider, $httpProvider) {
   $locationProvider.html5Mode(true);
   $routeProvider
+    .when("/list/", {redirectTo: "/list/inbox"})
     .when("/list/:listName", {controller: "ListCtrl", templateUrl: "/list.html"})
     .otherwise({redirectTo: "/list/inbox"});
   $httpProvider.withCredentials = true;
