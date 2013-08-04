@@ -89,7 +89,7 @@ editItem user listName item itemId = do
 removeItem :: String -> String -> Int -> IO ()
 removeItem user listName itemId = do
   (List is) <- loadList user listName
-  unless (itemId < length is) $ do
+  unless (itemId > length is) $ do
     let (xs, _:ys) = splitAt itemId is
         path = listDirectory </> user </> listName
     case xs ++ ys of
@@ -110,7 +110,7 @@ createListIfMissing user listName = do
 
 ----------- Internal Representation ----------
 
-data List = List [Item] deriving (Eq)
+newtype List = List [Item] deriving (Eq)
 data Item = Complete   { itemBody :: String }
           | Incomplete { itemBody :: String }
           deriving (Eq)
