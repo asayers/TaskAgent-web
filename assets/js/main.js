@@ -24,10 +24,7 @@ app.factory("listFactory", function($http) {
         return $http.put("/api/list/"+listName+"/"+item.id, item);
       },
       removeItem: function(listName, item) {
-        return $http({
-          method: "DELETE",
-          url: "/api/list/"+listName+"/"+item.id
-        });
+        return $http["delete"]("/api/list/"+listName+"/"+item.id);
       }
     };
 });

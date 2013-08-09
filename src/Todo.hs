@@ -53,6 +53,7 @@ import Data.Aeson (ToJSON, FromJSON, toJSON, parseJSON, object, (.=), (.:), Valu
 import Data.Aeson.Types (parseMaybe)
 import Data.Text (pack)
 import Control.Applicative ((<$>))
+import Safe (readMay)
 
 ------------- Config -----------
 
@@ -123,16 +124,22 @@ instance Show List where
   show (List xs) = unlines . map show $ xs
 
 instance Show Item where
-  show (Incomplete str) = "- " ++ str
-  show (Complete str)   = "x " ++ str
+  show (Incomplete str) = "- " ++ escapeString str
+  show (Complete str)   = "x " ++ escapeString str
 
 parseItem :: String -> Maybe Item
-parseItem ('-':' ':xs) = Just (Incomplete xs)
-parseItem ('x':' ':xs) = Just (Complete xs)
+parseItem ('-':' ':xs) = Incomplete <$> unescapeString xs
+parseItem ('x':' ':xs) = Complete <$> unescapeString xs
 parseItem _            = Nothing
 
 parseList :: String -> Maybe [Item]
 parseList = mapM parseItem . lines
+
+escapeString :: String -> String
+escapeString = tail . init . show
+
+unescapeString :: String -> Maybe String
+unescapeString cs = readMay $ "\"" ++ cs ++ "\""
 
 
 ----------- JSON representation -------------
